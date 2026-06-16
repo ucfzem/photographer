@@ -1,0 +1,6 @@
+node_modules/
+.wrangler/
+.wrangler/
+__pycache__/
+*.pyc
+.SESSION-*.md

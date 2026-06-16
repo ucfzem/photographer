@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Photographer — Lien traque</title>
+<script src="tracker.js"></script>
+<style>
+:root{--bg:#0a0a0f;--card:#13131a;--border:#2a2a3a;--accent:#7c6aff;--text:#f0eff8;--muted:#7a7a9a}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:40px;max-width:400px;width:100%}
+h1{color:var(--accent);font-size:1.5em;margin-bottom:10px}
+p{color:var(--muted);line-height:1.6;font-size:.95em;margin-bottom:20px}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:20px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.count{font-size:2.5em;font-weight:800;color:var(--accent)}
+.label{color:var(--muted);font-size:.85em}
+.btn{display:inline-block;background:var(--accent);color:#fff;padding:12px 24px;border-radius:50px;font-weight:700;text-decoration:none;font-size:.9em;transition:.2s}
+.btn:hover{box-shadow:0 4px 20px rgba(124,106,255,.3)}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="count" id="hitCount">-</div>
+  <div class="label">visites enregistrees</div>
+  <div class="spinner"></div>
+  <h1>Lien traque</h1>
+  <p>Vous allez etre redirige vers le portfolio dans quelques instants.<br>Votre visite a ete enregistree.</p>
+  <a href="./" class="btn" data-track="spy:clic_manuel">Aller directement</a>
+</div>
+
+<script>
+setTimeout(function(){ window.location.href = './'; }, 3000);
+setTimeout(function(){
+  if(window.__tracker){
+    var s = window.__tracker.stats();
+    document.getElementById('hitCount').textContent = s.totalVisits;
+  }
+}, 500);
+</script>
+
+</body>
+</html>

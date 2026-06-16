@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Photographer — Dashboard</title>
+<script src="tracker.js"></script>
+<style>
+:root{--bg:#0a0a0f;--card:#13131a;--border:#2a2a3a;--accent:#7c6aff;--text:#f0eff8;--muted:#7a7a9a;--green:#4ade80}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.container{max-width:900px;margin:0 auto;padding:20px}
+h1{text-align:center;color:var(--accent);font-size:1.8em;margin:20px 0 8px;letter-spacing:-.5px}
+.sub{text-align:center;color:var(--muted);font-size:.9em;margin-bottom:20px}
+nav{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:14px}
+nav a{color:var(--muted);text-decoration:none;padding:6px 14px;border-radius:20px;border:1px solid var(--border);font-size:.85em;transition:.2s}
+nav a:hover{border-color:var(--accent);color:var(--accent)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px}
+.card h3{color:var(--accent);font-size:.85em;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.num{font-size:2em;font-weight:800;color:var(--text)}
+.num.accent{color:var(--accent)}
+.num.green{color:var(--green)}
+.label{color:var(--muted);font-size:.8em;margin-top:2px}
+table{width:100%;border-collapse:collapse;font-size:.9em}
+th{text-align:left;padding:8px 6px;border-bottom:1px solid var(--border);color:var(--muted);font-size:.8em;text-transform:uppercase}
+td{padding:8px 6px;border-bottom:1px solid var(--border);color:var(--text);font-size:.85em}
+.bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:4px}
+.bar-fill{height:100%;background:var(--accent);border-radius:3px}
+.btn-group{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.btn{background:var(--accent);color:#fff;padding:8px 18px;border-radius:50px;font-weight:700;font-size:.85em;border:none;cursor:pointer;transition:.2s;text-decoration:none;display:inline-block}
+.btn:hover{box-shadow:0 4px 20px rgba(124,106,255,.3)}
+.btn-danger{background:#dc2626;color:white}
+.btn-danger:hover{box-shadow:0 4px 20px rgba(220,38,38,.3)}
+footer{text-align:center;padding:20px 0;color:var(--muted);font-size:.8em}
+[data-track]{cursor:pointer}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h1>Tableau de bord</h1>
+<div class="sub">Photographer — Statistiques de visite</div>
+
+<nav>
+  <a href="./">Accueil</a>
+  <a href="./spy.html">Spy</a>
+  <a href="./dashboard.html">Dashboard</a>
+</nav>
+
+<div class="grid" id="statsGrid">
+  <div class="card"><h3>Visites (local)</h3><div class="num accent" id="totalVisits">-</div></div>
+  <div class="card"><h3>Visites (global)</h3><div class="num green" id="globalVisits">-</div></div>
+  <div class="card"><h3>Temps moyen</h3><div class="num" id="avgTime">-</div><div class="label">secondes</div></div>
+  <div class="card"><h3>Aujourd'hui</h3><div class="num" id="todayVisits">-</div></div>
+</div>
+
+<div class="card" style="margin-bottom:12px">
+  <h3>Pages les plus visitees</h3>
+  <table><thead><tr><th>Page</th><th>Visites</th><th></th></tr></thead><tbody id="topPages"></tbody></table>
+</div>
+
+<div class="card" style="margin-bottom:12px">
+  <h3>Clics les plus frequents</h3>
+  <table><thead><tr><th>Element</th><th>Clics</th><th></th></tr></thead><tbody id="topClicks"></tbody></table>
+</div>
+
+<div class="card" style="margin-bottom:12px">
+  <h3>Dernieres visites</h3>
+  <table><thead><tr><th>Date</th><th>Page</th><th>Referant</th><th>Duree</th></tr></thead><tbody id="lastVisits"></tbody></table>
+</div>
+
+<div class="btn-group">
+  <button class="btn" onclick="exportJSON()" data-track="export:json">Exporter JSON</button>
+  <button class="btn" onclick="exportCSV()" data-track="export:csv">Exporter CSV</button>
+  <button class="btn btn-danger" onclick="if(confirm('Effacer toutes les donnees ?')){window.__tracker.clear();location.reload()}">Effacer local</button>
+  <button class="btn" onclick="showConfig()">Config GitHub</button>
+</div>
+
+<div id="configModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);align-items:center;justify-content:center;z-index:999;padding:20px">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;max-width:480px;width:100%">
+    <h3 style="color:var(--accent);margin-bottom:12px">GitHub Token</h3>
+    <p style="color:var(--muted);font-size:.9em;margin-bottom:12px">Token stocke dans votre navigateur (localStorage). Pas dans le code source.</p>
+    <input id="tokenInput" type="password" placeholder="github_pat_..." style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:.9em;margin-bottom:12px">
+    <div style="display:flex;gap:8px">
+      <button class="btn" onclick="saveToken()">Enregistrer</button>
+      <button class="btn" onclick="removeToken()" style="background:#dc2626">Effacer</button>
+      <button class="btn" onclick="closeConfig()" style="margin-left:auto;background:transparent;border:1px solid var(--border);color:var(--muted)">Fermer</button>
+    </div>
+    <div id="tokenStatus" style="margin-top:8px;font-size:.85em"></div>
+  </div>
+</div>
+
+<footer>
+  Donnees stockees dans votre navigateur (localStorage) • <span id="lastUpdate"></span>
+</footer>
+
+</div>
+
+<script>
+function fmtDate(ts){
+  var d = new Date(ts);
+  return d.toLocaleDateString('fr-FR', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+}
+
+function fmtDuration(s){
+  if(s < 60) return s + 's';
+  var m = Math.floor(s / 60);
+  s = s % 60;
+  return m + 'm ' + s + 's';
+}
+
+function render(){
+  if(!window.__tracker){ return; }
+  var stats = window.__tracker.stats();
+
+  document.getElementById('totalVisits').textContent = stats.totalVisits;
+  document.getElementById('avgTime').textContent = fmtDuration(Math.round(stats.avgTime));
+
+  var today = new Date().toISOString().split('T')[0];
+  var todayCount = stats.lastVisits.filter(function(v){ return new Date(v.start).toISOString().split('T')[0] === today; }).length;
+  document.getElementById('todayVisits').textContent = todayCount;
+
+  window.__tracker.globalStats(function(global){
+    if(global) document.getElementById('globalVisits').textContent = global.totalVisits;
+  });
+
+  var maxPage = stats.topPages.length ? stats.topPages[0][1] : 1;
+  document.getElementById('topPages').innerHTML = stats.topPages.map(function(p){
+    return '<tr><td>'+p[0]+'</td><td>'+p[1]+'</td><td><div class="bar"><div class="bar-fill" style="width:'+(p[1]/maxPage*100)+'%"></div></div></td></tr>';
+  }).join('') || '<tr><td colspan="3" style="color:var(--muted);text-align:center">Aucune donnee</td></tr>';
+
+  var maxClick = stats.topClicks.length ? stats.topClicks[0][1] : 1;
+  document.getElementById('topClicks').innerHTML = stats.topClicks.map(function(c){
+    return '<tr><td>'+c[0]+'</td><td>'+c[1]+'</td><td><div class="bar"><div class="bar-fill" style="width:'+(c[1]/maxClick*100)+'%"></div></div></td></tr>';
+  }).join('') || '<tr><td colspan="3" style="color:var(--muted);text-align:center">Aucun clic</td></tr>';
+
+  document.getElementById('lastVisits').innerHTML = stats.lastVisits.slice(0,50).map(function(v){
+    return '<tr><td>'+fmtDate(v.start)+'</td><td>'+v.page+'</td><td style="color:var(--muted);font-size:.8em">'+(v.referrer||'-')+'</td><td>'+(v.duration>0?fmtDuration(v.duration):'<span style="color:var(--muted)">en cours</span>')+'</td></tr>';
+  }).join('') || '<tr><td colspan="4" style="color:var(--muted);text-align:center">Aucune visite</td></tr>';
+
+  document.getElementById('lastUpdate').textContent = 'Mis a jour : ' + new Date().toLocaleTimeString('fr-FR');
+}
+
+function showConfig(){
+  document.getElementById('configModal').style.display = 'flex';
+  document.getElementById('tokenInput').value = window.__tracker.getToken() || '';
+  document.getElementById('tokenStatus').textContent = window.__tracker.hasToken() ? 'Token present' : 'Aucun token';
+}
+function closeConfig(){ document.getElementById('configModal').style.display = 'none'; }
+function saveToken(){
+  var t = document.getElementById('tokenInput').value.trim();
+  if(!t){ document.getElementById('tokenStatus').textContent = 'Token vide'; return; }
+  window.__tracker.setToken(t);
+  document.getElementById('tokenStatus').textContent = 'Token enregistre !';
+}
+function removeToken(){
+  window.__tracker.removeToken();
+  document.getElementById('tokenInput').value = '';
+  document.getElementById('tokenStatus').textContent = 'Token efface';
+}
+
+function exportJSON(){
+  var blob = new Blob([window.__tracker.exportJSON()], {type:'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'photographer-data.json';
+  a.click();
+}
+
+function exportCSV(){
+  var blob = new Blob([window.__tracker.exportCSV()], {type:'text/csv'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'photographer-data.csv';
+  a.click();
+}
+
+setTimeout(render, 400);
+setInterval(function(){
+  if(window.__tracker) render();
+}, 5000);
+</script>
+
+</body>
+</html>
